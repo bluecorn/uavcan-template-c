@@ -1,6 +1,6 @@
 # uavcan-template-c
 
-This template project is intended to be used as a started project for developing an [UAVCAN](https://uavcan.org/) node in C using [libcanard](https://github.com/UAVCAN/libcanard).
+This template project is intended to be used as a started project for developing an [UAVCAN](https://uavcan.org/) node in C using [libcanard](https://github.com/UAVCAN/libcanard) and socketcan as the [Platform-specific component](https://github.com/UAVCAN/platform_specific_components).
 
 ### Requirements
 
