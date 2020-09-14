@@ -4,8 +4,9 @@ project(uavccan-templae-c VERSION 0.1.0)
 include(CTest)
 enable_testing()
 
-add_executable(uavccan-templae-c main.cpp)
+add_executable(uavcan-c-example ./src/main.c)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
+set(CMAKE_C_STANDARD 11)
 include(CPack)
