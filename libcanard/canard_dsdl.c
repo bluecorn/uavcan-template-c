@@ -31,8 +31,17 @@
 #    define CANARD_PRIVATE static
 #endif
 
-#if !defined(__STDC_VERSION__) || (__STDC_VERSION__ < 201112L)
-#    error "Unsupported language: ISO C11 or a newer version is required."
+#if !defined(__STDC_VERSION__) || (__STDC_VERSION__ < 199901L)
+#    error "Unsupported language: ISO C99 or a newer version is required."
+#endif
+
+/// In general, _Static_assert is not present on C99 compilers, except for gnu99
+#if !defined(static_assert)
+// Intentional violation of MISRA: static assertion macro cannot be replaced with a function definition.
+#    define static_assert(x, ...) typedef char _static_assert_gl(_static_assertion_, __LINE__)[(x) ? 1 : -1]  // NOSONAR
+#    define _static_assert_gl(a, b) _static_assert_gl_impl(a, b)                                              // NOSONAR
+// Intentional violation of MISRA: the paste operator ## cannot be avoided in this context.
+#    define _static_assert_gl_impl(a, b) a##b  // NOSONAR
 #endif
 
 /// Detect whether the target platform is compatible with IEEE 754.
@@ -146,9 +155,10 @@ void canardDSDLSetBit(uint8_t* const buf, const size_t off_bit, const bool value
     canardDSDLCopyBits(1U, 0U, off_bit, &val, buf);
 }
 
+static_assert(WIDTH64 == (sizeof(uint64_t) * BYTE_WIDTH), "Unexpected size of uint64_t");
+
 void canardDSDLSetUxx(uint8_t* const buf, const size_t off_bit, const uint64_t value, const uint8_t len_bit)
 {
-    _Static_assert(WIDTH64 == (sizeof(uint64_t) * BYTE_WIDTH), "Unexpected size of uint64_t");
     CANARD_ASSERT(buf != NULL);
     const size_t saturated_len_bit = chooseMin(len_bit, WIDTH64);
 #if CANARD_DSDL_CONFIG_LITTLE_ENDIAN
@@ -289,7 +299,7 @@ int64_t canardDSDLGetI64(const uint8_t* const buf, const size_t buf_size, const 
 
 #if CANARD_DSDL_PLATFORM_IEEE754_FLOAT
 
-_Static_assert(WIDTH32 == (sizeof(CanardDSDLFloat32) * BYTE_WIDTH), "Unsupported floating point model");
+static_assert(WIDTH32 == (sizeof(CanardDSDLFloat32) * BYTE_WIDTH), "Unsupported floating point model");
 
 // Intentional violation of MISRA: we need this union because the alternative is far more error prone.
 // We have to rely on low-level data representation details to do the conversion; unions are helpful.
@@ -314,7 +324,15 @@ CANARD_PRIVATE uint16_t float16Pack(const CanardDSDLFloat32 value)
     uint16_t out = 0;
     if (in.bits >= f32inf.bits)
     {
-        out = (in.bits > f32inf.bits) ? (uint16_t) 0x7FFFU : (uint16_t) 0x7C00U;  // NOLINT NOSONAR
+        // The no-lint statements suppress the warnings about magic numbers.
+        if ((in.bits & 0x7FFFFFUL) != 0)  // NOLINT NOSONAR
+        {
+            out = 0x7E00U;  // NOLINT NOSONAR
+        }
+        else
+        {
+            out = (in.bits > f32inf.bits) ? (uint16_t) 0x7FFFU : (uint16_t) 0x7C00U;  // NOLINT NOSONAR
+        }
     }
     else
     {
@@ -364,7 +382,7 @@ CanardDSDLFloat32 canardDSDLGetF16(const uint8_t* const buf, const size_t buf_si
 
 #if CANARD_DSDL_PLATFORM_IEEE754_FLOAT
 
-_Static_assert(WIDTH32 == (sizeof(CanardDSDLFloat32) * BYTE_WIDTH), "Unsupported floating point model");
+static_assert(WIDTH32 == (sizeof(CanardDSDLFloat32) * BYTE_WIDTH), "Unsupported floating point model");
 
 void canardDSDLSetF32(uint8_t* const buf, const size_t off_bit, const CanardDSDLFloat32 value)
 {
@@ -398,7 +416,7 @@ CanardDSDLFloat32 canardDSDLGetF32(const uint8_t* const buf, const size_t buf_si
 
 #if CANARD_DSDL_PLATFORM_IEEE754_DOUBLE
 
-_Static_assert(WIDTH64 == (sizeof(CanardDSDLFloat64) * BYTE_WIDTH), "Unsupported floating point model");
+static_assert(WIDTH64 == (sizeof(CanardDSDLFloat64) * BYTE_WIDTH), "Unsupported floating point model");
 
 CanardDSDLFloat64 canardDSDLGetF64(const uint8_t* const buf, const size_t buf_size, const size_t off_bit)
 {
