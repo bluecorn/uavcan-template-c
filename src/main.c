@@ -16,7 +16,7 @@
 #include <time.h>
 #include <stdio.h>
 
-static const uint16_t HeartbeatSubjectID      = 32085;
+static const uint16_t HeartbeatSubjectID      = 7509;
 //* static const uint16_t RegisterAccessServiceID = 384;
 
 /// Should match the wildcard "uavcan.pub.*" for publishers. Likewise, "uavcan.sub.*" for subscribers.
@@ -72,6 +72,7 @@ static void publishHeartbeat(CanardInstance* const canard, const uint32_t uptime
         0,
     };
     const CanardTransfer transfer = {
+        .timestamp_usec = uptime,
         .priority       = CanardPriorityNominal,
         .transfer_kind  = CanardTransferKindMessage,
         .port_id        = HeartbeatSubjectID,
